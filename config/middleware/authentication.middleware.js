@@ -11,14 +11,16 @@ let authentication = async (req, res, next) => {
     if (tokenData) {
       res.status(400).send({ msg: "Please login first" });
     } else {
-      var decoded = jwt.verify(token, process.env.secretKey);
-      req.body.decodedData = decoded;
-      console.log(decoded);
-      if (decoded) {
-        next();
-      }else{
-        res.status(400).send({ msg: "Please Login First" });
-      }
+      jwt.verify(token, process.env.secretKey ,(err,decoded)=>{
+        req.body.decodedData = decoded;
+        console.log(decoded);
+        if(err){
+          res.status(400).send(err)
+        }else {
+          next();
+        }
+      });
+    
     }
   } else {
     res.status(400).send({ msg: "Please Login First" });

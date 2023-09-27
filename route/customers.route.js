@@ -1,10 +1,13 @@
 const express = require("express");
 
 const { CustomerModel } = require("../model/customer.model");
+const { authentication } = require("../config/middleware/authentication.middleware");
+
+
 
 const customerRouter = express.Router();
 
-customerRouter.get("/customers", async (req, res) => {
+customerRouter.get("/customers",authentication, async (req, res) => {
   try {
     let data = await CustomerModel.find();
     res.status(200).send(data);
@@ -14,7 +17,7 @@ customerRouter.get("/customers", async (req, res) => {
   }
 });
 
-customerRouter.post("/customers", async (req, res) => {
+customerRouter.post("/customers",authentication,async (req, res) => {
   let payload = req.body;
 
   try {

@@ -6,9 +6,7 @@ const { connection } = require("./config/database/db");
 //authentication router
 const { userRouter } = require("./route/user.route");
 const { customerRouter } = require("./route/customers.route");
-const {
-  authentication,
-} = require("./config/middleware/authentication.middleware");
+const { authentication,} = require("./config/middleware/authentication.middleware");
 const cookieParser = require("cookie-parser");
 const app = express();
 
@@ -25,8 +23,8 @@ app.get("/" , (req,res)=>{
 //Use authRouter
 app.use("/api", userRouter);
 
-//auth middleware use
-app.use(authentication);
+
+
 //user customer route
 app.use("/api", customerRouter);
 
