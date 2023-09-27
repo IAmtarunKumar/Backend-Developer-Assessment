@@ -10,8 +10,6 @@ const jwt = require("jsonwebtoken");
 
 const cookieParser = require("cookie-parser");
 
-
-
 const {
   authentication,
 } = require("../config/middleware/authentication.middleware");
@@ -22,23 +20,12 @@ const { BlacklistModel } = require("../model/blacklist_token.model");
 
 const userRouter = express.Router();
 
-userRouter.get("/", (req, res) => {
-  res.cookie("userData" , {"user" : "tarun"})
-  res.send("Working");
-});
-
-userRouter.get("/c", (req, res) => {
-  const userData = req.cookies.userData;
-console.log(userData)
-  res.send(userData);
-});
-
 //Register
 userRouter.post("/register", async (req, res) => {
   let { username, email, password } = req.body;
   const otp = Math.floor(1000 + Math.random() * 9000);
-  console.log(otp)
- 
+  console.log(otp);
+
   try {
     let userData = await UserModel.findOne({ email: email });
     if (userData) {
@@ -46,8 +33,8 @@ userRouter.post("/register", async (req, res) => {
     } else {
       /////////////////////////////////////////////////////
 
-    // Generate OTP 
-  
+      // Generate OTP
+
       var transporter = nodemailer.createTransport({
         service: "gmail",
         auth: {
@@ -77,15 +64,15 @@ userRouter.post("/register", async (req, res) => {
 
       bcrypt.hash(password, 6, async (err, hash) => {
         if (hash) {
-          let user ={
+          let user = {
             username,
             email,
             password: hash,
-            otp
-          }
+            otp,
+          };
 
-          res.cookie("userData" , user)
-         
+          res.cookie("userData", user);
+
           res.status(200).send({ msg: "OTP is Sent Please Verify the OTP" });
         }
       });
@@ -98,21 +85,26 @@ userRouter.post("/register", async (req, res) => {
 
 //verify otp
 
-userRouter.post("/verify" , async(req,res)=>{
-  let {OTP} =  req.body
+userRouter.post("/verify", async (req, res) => {
+  let { OTP } = req.body;
   const userData = req.cookies.userData;
 
-  console.log(userData)
-  if(userData.otp===OTP){
-
-    let registered = await UserModel({username : userData.username , email : userData.email , password : userData.password})
-    await registered.save()
-    res.send({msg : "User Register Successfully"})
+  console.log(userData);
+  try {
+    if (userData.otp === OTP) {
+      let registered = await UserModel({
+        username: userData.username,
+        email: userData.email,
+        password: userData.password,
+      });
+      await registered.save();
+      res.status(200).send({ msg: "User Register Successfully" });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: `Something went wrong: ${error.message}` });
   }
-  
-})
-
-
+});
 
 //Login
 userRouter.post("/login", async (req, res) => {
@@ -127,11 +119,11 @@ userRouter.post("/login", async (req, res) => {
             process.env.secretKey
           );
 
-          res.send({ msg: "login successfully", token });
+          res.status(200).send({ msg: "login successfully", token });
         }
       });
     } else {
-      res.send({ msg: "Please register first" });
+      res.status(400).send({ msg: "Please register first" });
     }
   } catch (error) {
     console.error(error);
@@ -140,13 +132,13 @@ userRouter.post("/login", async (req, res) => {
 });
 
 // Logout
-userRouter.post("/logout", async (req, res) => {
+userRouter.post("/logout", authentication, async (req, res) => {
   let token = req.headers.authentication;
   console.log(token);
   try {
     let userToken = await BlacklistModel({ token: token });
     await userToken.save();
-    res.send({ msg: "Logout Successfully" });
+    res.status(200).send({ msg: "Logout Successfully" });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: `Something went wrong: ${error.message}` });
@@ -157,16 +149,30 @@ userRouter.post("/logout", async (req, res) => {
 userRouter.patch("/reset", authentication, async (req, res) => {
   let { password } = req.body;
   let id = req.body.decodedData.id;
+  let token = req.headers.authentication;
+  console.log(token);
 
-  bcrypt.hash(password, 6, async (err, hash) => {
-    if (hash) {
-      let userData = await UserModel.findByIdAndUpdate(
-        { _id: id },
-        { password: hash }
-      );
-      res.send({ msg: "password is reset successfully", userData });
-    }
-  });
+  try {
+    bcrypt.hash(password, 6, async (err, hash) => {
+      if (hash) {
+        let userData = await UserModel.findByIdAndUpdate(
+          { _id: id },
+          { password: hash }
+        );
+
+        //token blacklisted
+        let blacklist = await BlacklistModel({ token });
+        await blacklist.save();
+
+        res
+          .status(200)
+          .send({ msg: "password is reset successfully. Please Login Again" });
+      }
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: `Something went wrong: ${error.message}` });
+  }
 });
 
 module.exports = { userRouter };
