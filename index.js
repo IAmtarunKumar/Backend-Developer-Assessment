@@ -22,16 +22,15 @@ app.get("/" , (req,res)=>{
     res.send("Welcome to Our API")
 })
 
-
-
 //Use authRouter
 app.use("/api", userRouter);
 
 //auth middleware use
 app.use(authentication);
-
 //user customer route
 app.use("/api", customerRouter);
+
+
 
 app.listen(process.env.port || 8080 , async () => {
   try {

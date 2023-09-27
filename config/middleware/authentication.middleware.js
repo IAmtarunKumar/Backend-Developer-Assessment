@@ -16,6 +16,8 @@ let authentication = async (req, res, next) => {
       console.log(decoded);
       if (decoded) {
         next();
+      }else{
+        res.status(400).send({ msg: "Please Login First" });
       }
     }
   } else {
