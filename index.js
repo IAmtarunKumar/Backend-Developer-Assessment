@@ -7,9 +7,14 @@ const { connection } = require("./config/database/db");
 const { userRouter } = require("./route/user.route");
 const { customerRouter } = require("./route/customers.route");
 const {authentication} = require("./config/middleware/authentication.middleware");
-
+const cookieParser = require("cookie-parser");
 const app = express();
+
+
 app.use(express.json()); //paresed the json data
+
+// Use the cookie-parser middleware
+app.use(cookieParser());
 
 //Use authRouter
 app.use("/api", userRouter);

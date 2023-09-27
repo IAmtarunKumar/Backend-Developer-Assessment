@@ -1,36 +1,92 @@
 const express = require("express");
 require("dotenv").config();
+
+const nodemailer = require("nodemailer");
+
 //bcrypt - hash the password
 const bcrypt = require("bcrypt");
 //jsonwebtoken
 const jwt = require("jsonwebtoken");
 
+const cookieParser = require("cookie-parser");
+
+
+
+const {
+  authentication,
+} = require("../config/middleware/authentication.middleware");
+
 //customer model
 const { UserModel } = require("../model/user.model");
+const { BlacklistModel } = require("../model/blacklist_token.model");
 
 const userRouter = express.Router();
 
 userRouter.get("/", (req, res) => {
+  res.cookie("userData" , {"user" : "tarun"})
   res.send("Working");
 });
 
+userRouter.get("/c", (req, res) => {
+  const userData = req.cookies.userData;
+console.log(userData)
+  res.send(userData);
+});
+
+//Register
 userRouter.post("/register", async (req, res) => {
   let { username, email, password } = req.body;
-
+  const otp = Math.floor(1000 + Math.random() * 9000);
+  console.log(otp)
+ 
   try {
     let userData = await UserModel.findOne({ email: email });
     if (userData) {
       res.send({ msg: "Email ID is already exists. Please go to Login" });
     } else {
+      /////////////////////////////////////////////////////
+
+    // Generate OTP 
+  
+      var transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: "tarunkumarmahto2000@gmail.com",
+          pass: "wlghihttobcllmvj",
+        },
+      });
+
+      var mailOptions = {
+        from: "tarunkumarmahto2000@gmail.com",
+        to: email,
+        subject: " Name- " + username + " | " + " Email- " + email,
+        text: `Your OTP is ${otp}`,
+      };
+
+      transporter.sendMail(mailOptions, function (error, info) {
+        if (error) {
+          console.log(error);
+        } else {
+          console.log("Email has been sent", express.response.info);
+        }
+      });
+
+      // res.send({ msg: "Email is Sent" });
+
+      ///////////////////////////////////////////////////
+
       bcrypt.hash(password, 6, async (err, hash) => {
         if (hash) {
-          let user = await UserModel({
+          let user ={
             username,
             email,
             password: hash,
-          });
-          await user.save();
-          res.status(200).send({ msg: "Register Successfully" });
+            otp
+          }
+
+          res.cookie("userData" , user)
+         
+          res.status(200).send({ msg: "OTP is Sent Please Verify the OTP" });
         }
       });
     }
@@ -40,6 +96,25 @@ userRouter.post("/register", async (req, res) => {
   }
 });
 
+//verify otp
+
+userRouter.post("/verify" , async(req,res)=>{
+  let {OTP} =  req.body
+  const userData = req.cookies.userData;
+
+  console.log(userData)
+  if(userData.otp===OTP){
+
+    let registered = await UserModel({username : userData.username , email : userData.email , password : userData.password})
+    await registered.save()
+    res.send({msg : "User Register Successfully"})
+  }
+  
+})
+
+
+
+//Login
 userRouter.post("/login", async (req, res) => {
   let { email, password } = req.body;
   try {
@@ -62,6 +137,36 @@ userRouter.post("/login", async (req, res) => {
     console.error(error);
     res.status(500).json({ error: `Something went wrong: ${error.message}` });
   }
+});
+
+// Logout
+userRouter.post("/logout", async (req, res) => {
+  let token = req.headers.authentication;
+  console.log(token);
+  try {
+    let userToken = await BlacklistModel({ token: token });
+    await userToken.save();
+    res.send({ msg: "Logout Successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: `Something went wrong: ${error.message}` });
+  }
+});
+
+// Reset Password
+userRouter.patch("/reset", authentication, async (req, res) => {
+  let { password } = req.body;
+  let id = req.body.decodedData.id;
+
+  bcrypt.hash(password, 6, async (err, hash) => {
+    if (hash) {
+      let userData = await UserModel.findByIdAndUpdate(
+        { _id: id },
+        { password: hash }
+      );
+      res.send({ msg: "password is reset successfully", userData });
+    }
+  });
 });
 
 module.exports = { userRouter };
