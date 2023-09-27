@@ -2,9 +2,9 @@ const mongoose = require("mongoose")
 
 //schema
 const customerSchema = mongoose.Schema({
-    name : String,
-    contect : String,
-    address : String
+    name : {type : String , required : true},
+    contect : {type : String , required : true},
+    address : {type : String , required : true}
 })
 
 

@@ -2,7 +2,7 @@ const mongoose = require("mongoose")
 
 //schema
 const blacklistSchema = mongoose.Schema({
-    token : String
+    token : {type : String , required : true}
 })
 
 
