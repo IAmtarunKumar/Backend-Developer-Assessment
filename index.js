@@ -33,7 +33,7 @@ app.use(authentication);
 //user customer route
 app.use("/api", customerRouter);
 
-app.listen(process.env.port, async () => {
+app.listen(process.env.port || 8080 , async () => {
   try {
     await connection;
     console.log("Database is connected");
