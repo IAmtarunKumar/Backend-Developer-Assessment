@@ -3,9 +3,9 @@
 This repository contains API documentation for the OCPL.
 
 
-** Deploy Link ** : <a href="https://ocpl.onrender.com">Video Link</a>
+## Deploy Link  : <a href="https://ocpl.onrender.com">Video Link</a>
 
-** Video Link ** : <a href="https://drive.google.com/file/d/1OpcC2kIxl_-eHCUhJKO00QFg3U5eN9Re/view?usp=sharing">Video Link</a>
+## Video Link  : <a href="https://drive.google.com/file/d/1OpcC2kIxl_-eHCUhJKO00QFg3U5eN9Re/view?usp=sharing">Video Link</a>
 
 ## Table of Contents
 
