@@ -91,7 +91,7 @@ userRouter.post("/verify", async (req, res) => {
 
   console.log(userData);
   try {
-    if (userData.otp === OTP) {
+    if (userData.otp == OTP) {
       let registered = await UserModel({
         username: userData.username,
         email: userData.email,
@@ -134,7 +134,7 @@ userRouter.post("/login", async (req, res) => {
 // Logout
 userRouter.post("/logout", authentication, async (req, res) => {
   let token = req.headers.authentication;
-  console.log(token);
+  // console.log(token);
   try {
     let userToken = await BlacklistModel({ token: token });
     await userToken.save();
@@ -150,7 +150,7 @@ userRouter.patch("/reset", authentication, async (req, res) => {
   let { password } = req.body;
   let id = req.body.decodedData.id;
   let token = req.headers.authentication;
-  console.log(token);
+  // console.log(token);
 
   try {
     bcrypt.hash(password, 6, async (err, hash) => {

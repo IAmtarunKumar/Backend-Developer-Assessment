@@ -13,7 +13,7 @@ let authentication = async (req, res, next) => {
     } else {
       jwt.verify(token, process.env.secretKey ,(err,decoded)=>{
         req.body.decodedData = decoded;
-        console.log(decoded);
+        // console.log(decoded);
         if(err){
           res.status(400).send(err)
         }else {
