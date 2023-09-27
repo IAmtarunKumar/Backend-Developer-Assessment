@@ -33,8 +33,8 @@ Registers a new user with email verification.
 ```json
 {
     "name": "string (required)",
-    "email": "string (required, valid email format)",
-    "password": "string (required, 6 characters or more)"
+    "email": "string (required)",
+    "password": "string (required)"
 }
 ```
 
